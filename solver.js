@@ -23,28 +23,19 @@
         },
         validValues: [1, 2, 3, 4, 5, 6, 7, 8, 9],
         guessesAllowed: 4,
-        cardContainer: $('.playing-card-field'),
+        ticketContainer: $('.ticket-field'),
         resetButton: $('#reset-card'),
         payoutContainer: $('.payout-panel'),
-        playFields: false,
         init: function() {
             var _this = this;
             _this.resetButton.on('click', _this.resetGame);
             _this.buildPayoutsList(function() {
                 _this.buildPlayingCardField(function() {
-                    _this.playFields.each(function() {
-                        $(this).height($(this).width());
-                    });
-                    _this.playFields.on('keyup', _.debounce(function(e) {
+                    $('input.field', _this.ticketContainer).on('keyup', _.debounce(function(e) {
                         _this.cardFieldChange(e);
                     }, 100));
                 });
             });
-        },
-        resetGame: function(cb) {
-            var _this = this;
-            $('.form-group').removeClass('has-error');
-            $('.field').val('');
         },
         buildPayoutsList: function(cb) {
             var _this = this;
@@ -86,32 +77,64 @@
         },
         buildPlayingCardField: function(cb) {
             var _this = this;
-            for (var row = 0; row < 3; row++) {
+            for (var row = 1; row <= 5; row++) {
                 var rowHtml = $('<div></div>').addClass('row').css('margin', '0.25em 0');
-                for (var col = 0; col < 3; col++) {
-                    rowHtml.append(
-                        $('<div></div>')
-                        .addClass('col-xs-4')
-                        .append(
-                            $('<div></div>')
-                            .addClass('form-group')
-                            .append($('<input />')
-                                .addClass('form-control field')
-                                .css({
-                                    'font-size': '2.5em',
-                                    'font-weight': 'bold',
-                                    'text-align': 'center'
-                                })
+                switch (row) {
+                    case 1:
+                    case 5:
+                        for (var col = 1; col <= 4; col++) {
+                            var fieldHtml = '';
+                            if (row == 1 && col == 4) fieldHtml = '<i class="fa fa-arrow-circle-up fa-rotate-45" aria-hidden="true"></i>';
+                            else if (row == 5 && col == 4) fieldHtml = '<i class="fa fa-arrow-circle-right fa-rotate-45" aria-hidden="true"></i>';
+                            else if (row == 5) fieldHtml = '<i class="fa fa-arrow-circle-down" aria-hidden="true"></i>';
+                            rowHtml.append(
+                                $('<div></div>')
+                                .addClass('col-xs-3')
                                 .attr({
-                                    'type': 'text',
                                     'id': 'field' + row + 'x' + col
-                                }))
-                        )
-                    );
+                                })
+                                .html(fieldHtml)
+                            );
+                        }
+                        break;
+                    default:
+                        for (var col = 1; col <= 3; col++) {
+                            rowHtml.append(
+                                $('<div></div>')
+                                .addClass('col-xs-3 field' + row + 'x' + col)
+                                .append(
+                                    $('<div></div>')
+                                    .addClass('form-group')
+                                    .append($('<input />')
+                                        .addClass('form-control field field' + row + 'x' + col)
+                                        .css({
+                                            'font-weight': 'bold',
+                                            'text-align': 'center'
+                                        })
+                                        .attr({
+                                            'type': 'text'
+                                        }))
+                                )
+                            );
+                        }
+                        var fieldHtml = (col == 4) ? '<i class="fa fa-arrow-circle-right" aria-hidden="true"></i>' : '';
+                        rowHtml.append(
+                            $('<div></div>')
+                            .addClass('col-xs-3 field' + row + 'x' + col)
+                            .html(fieldHtml)
+                        );
+                        break;
                 }
-                _this.cardContainer.append(rowHtml);
+
+                _this.ticketContainer.append(rowHtml);
             }
-            _this.playFields = $('input.field', this.cardContainer);
+
+            var maxRowHeight = 0;
+            $('.row', _this.ticketContainer).each(function(k, v) {
+                if($(this).height() > maxRowHeight) maxRowHeight = $(this).height();
+            });
+            $('.row', _this.ticketContainer).height(maxRowHeight);
+
             if (typeof(cb) === 'function') cb();
         },
         cardFieldChange: function(e) {
@@ -127,28 +150,49 @@
                 return false;
             }
 
+            // set the value to only the parsed int, stripping any extra characters
             if (number != _input.val()) _input.val(number);
 
-            var dupFound = false;
-            var numFilled = 0;
-            _this.playFields.each(function() {
-                if ($(this).attr('id') == _input.attr('id')) {
-                    numFilled++;
-                    return true;
-                }
-                var curVal = parseInt($.trim($(this).val()));
-                if (!curVal) return true;
-                if (curVal == number) {
-                    dupFound = true;
-                    _inputGroup.addClass('has-error');
-                    return false;
-                }
-                numFilled++;
-            });
-            if (dupFound) return false;
+            _this.checkForDuplicates();
 
-            if (numFilled == _this.guessesAllowed) console.log('ok ready');
-        }
+            var numFilled = $('input.field', _this.ticketContainer).filter(function(k, v) {
+                return !(!parseInt($.trim($(v).val())));
+            }).length;
+
+            if (numFilled == _this.guessesAllowed &&
+                $('.form-group.has-error', _this.ticketContainer).length == 0) {
+                _this.beginCalc();
+            }
+        },
+        checkForDuplicates: function(e) {
+            var _this = this;
+            $('.form-group', _this.ticketContainer).removeClass('has-error');
+            $('input.field', _this.ticketContainer).each(function() {
+                var _input = $(this);
+                var _curVal = parseInt($.trim(_input.val()));
+                if (!_curVal) return true;
+                $('input.field', _this.ticketContainer).each(function() {
+                    var __input = $(this);
+                    var __curVal = parseInt($.trim(__input.val()));
+                    if (_input.attr('id') == __input.attr('id')) return true;
+                    if (!__curVal) return true;
+                    if (_curVal == __curVal) {
+                        _input.closest('.form-group').addClass('has-error');
+                        __input.closest('.form-group').addClass('has-error');
+                    }
+                });
+            });
+        },
+        beginCalc: function() {
+            var _this = this;
+            $('input.field', _this.ticketContainer).prop('disabled', true);
+        },
+        resetGame: function(cb) {
+            var _this = this;
+            $('.form-group').removeClass('has-error');
+            $('.field').val('');
+            $('input.field', _this.ticketContainer).prop('disabled', false);
+        },
     }
     app.init();
 })(window, jQuery, _);
