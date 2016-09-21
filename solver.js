@@ -112,7 +112,8 @@
                                             'text-align': 'center'
                                         })
                                         .attr({
-                                            'type': 'text'
+                                            'type': 'text',
+                                            'id': 'field' + row + 'x' + col
                                         }))
                                 )
                             );
@@ -131,7 +132,7 @@
 
             var maxRowHeight = 0;
             $('.row', _this.ticketContainer).each(function(k, v) {
-                if($(this).height() > maxRowHeight) maxRowHeight = $(this).height();
+                if ($(this).height() > maxRowHeight) maxRowHeight = $(this).height();
             });
             $('.row', _this.ticketContainer).height(maxRowHeight);
 
