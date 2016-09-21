@@ -21,14 +21,41 @@
             '23': '1800',
             '24': '3600'
         },
-        validValues: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        defaultProbResults: {
+            '6': 0,
+            '7': 0,
+            '8': 0,
+            '9': 0,
+            '10': 0,
+            '11': 0,
+            '12': 0,
+            '13': 0,
+            '14': 0,
+            '15': 0,
+            '16': 0,
+            '17': 0,
+            '18': 0,
+            '19': 0,
+            '20': 0,
+            '21': 0,
+            '22': 0,
+            '23': 0,
+            '24': 0
+        },
+        validNumbers: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        numbersUsed: [],
         guessesAllowed: 4,
         ticketContainer: $('.ticket-field'),
         resetButton: $('#reset-card'),
         payoutContainer: $('.payout-panel'),
         init: function() {
             var _this = this;
-            _this.resetButton.on('click', _this.resetGame);
+            _this.resetButton.on('click', function() {
+                $('.form-group').removeClass('has-error');
+                $('input.field').val('');
+                $('input.field', _this.ticketContainer).prop('disabled', false);
+                _this.numbersUsed = [];
+            });
             _this.buildPayoutsList(function() {
                 _this.buildPlayingCardField(function() {
                     $('input.field', _this.ticketContainer).on('keyup', _.debounce(function(e) {
@@ -106,7 +133,7 @@
                                     $('<div></div>')
                                     .addClass('form-group')
                                     .append($('<input />')
-                                        .addClass('form-control field field' + row + 'x' + col)
+                                        .addClass('form-control field field' + row + 'x' + col + ' row' + row + ' col' + col)
                                         .css({
                                             'font-weight': 'bold',
                                             'text-align': 'center'
@@ -146,7 +173,7 @@
 
             _inputGroup.removeClass('has-error');
 
-            if ($.inArray(number, _this.validValues) < 0) {
+            if ($.inArray(number, _this.validNumbers) < 0) {
                 _input.val('');
                 return false;
             }
@@ -156,9 +183,7 @@
 
             _this.checkForDuplicates();
 
-            var numFilled = $('input.field', _this.ticketContainer).filter(function(k, v) {
-                return !(!parseInt($.trim($(v).val())));
-            }).length;
+            var numFilled = _this.getFilledOutFields().length;
 
             if (numFilled == _this.guessesAllowed &&
                 $('.form-group.has-error', _this.ticketContainer).length == 0) {
@@ -187,12 +212,66 @@
         beginCalc: function() {
             var _this = this;
             $('input.field', _this.ticketContainer).prop('disabled', true);
+            _this.getFilledOutFields().each(function(i, v) {
+                var number = parseInt($.trim($(v).val()));
+                if (!isNaN(number)) _this.numbersUsed.push(number);
+            });
+            for (var row = 2; row <= 4; row++) {
+                var numbers = [];
+                for (var col = 1; col <= 3; col++) {
+                    var number = parseInt($.trim($('input#field' + row + 'x' + col).val()));
+                    if (!isNaN(number)) numbers.push(number);
+                }
+                var results = _this.getGroupProbabilty(numbers);
+            }
         },
-        resetGame: function(cb) {
+        getGroupProbabilty: function(numbers) {
             var _this = this;
-            $('.form-group').removeClass('has-error');
-            $('.field').val('');
-            $('input.field', _this.ticketContainer).prop('disabled', false);
+            switch (numbers.length) {
+                case 3:
+                    var sum = 0;
+                    $.each(numbers, function(i, v) {
+                        sum += v;
+                    });
+                    var results = _this.defaultProbResults;
+                    results[sum] = 1;
+                    return results;
+                case 2:
+                    var sum = 0;
+                    $.each(numbers, function(i, v) {
+                        sum += v;
+                    });
+                    var results = _this.defaultProbResults;
+                    $.each(results, function(i, v) {
+                        if (sum >= i) {
+                            results[i] = 'zero';
+                            return true;
+                        }
+                        var diff = i - sum;
+                        if (_this.numbersUsed.indexOf(diff) > -1) {
+                            results[i] = 'zilch';
+                            return true;
+                        }
+                        results[i] = (1 - (1 / _this.numbersUsed.length));
+                    });
+                    console.log(results);
+                    break;
+                case 1:
+                    break;
+                case 0:
+                    break;
+                default:
+                    return false;
+            }
+            if (numbers.length == 3) {
+
+            }
+        },
+        getFilledOutFields: function() {
+            var _this = this;
+            return $('input.field', _this.ticketContainer).filter(function(k, v) {
+                return !(!parseInt($.trim($(v).val())));
+            });
         },
     }
     app.init();
