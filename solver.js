@@ -1,4 +1,4 @@
-(function(w, $, _) {
+(function (w, $, _) {
     var app = {
         defaultPayoutList: {
             '6': '10000',
@@ -48,25 +48,25 @@
         ticketContainer: $('.ticket-field'),
         resetButton: $('#reset-card'),
         payoutContainer: $('.payout-panel'),
-        init: function() {
+        init: function () {
             var _this = this;
-            _this.resetButton.on('click', function() {
+            _this.resetButton.on('click', function () {
                 $('.form-group').removeClass('has-error');
                 $('input.field').val('');
                 $('input.field', _this.ticketContainer).prop('disabled', false);
                 _this.numbersUsed = [];
             });
-            _this.buildPayoutsList(function() {
-                _this.buildPlayingCardField(function() {
-                    $('input.field', _this.ticketContainer).on('keyup', _.debounce(function(e) {
+            _this.buildPayoutsList(function () {
+                _this.buildPlayingCardField(function () {
+                    $('input.field', _this.ticketContainer).on('keyup', _.debounce(function (e) {
                         _this.cardFieldChange(e);
                     }, 100));
                 });
             });
         },
-        buildPayoutsList: function(cb) {
+        buildPayoutsList: function (cb) {
             var _this = this;
-            $.each(this.defaultPayoutList, function(k, v) {
+            $.each(this.defaultPayoutList, function (k, v) {
                 var formGroup = $('<div></div>');
                 formGroup.addClass('form-group');
                 formGroup.css({
@@ -80,29 +80,29 @@
                 inputGroup.append('<div class="input-group-addon">' + k + '</div>');
                 inputGroup.append(
                     $('<input/>')
-                    .attr({
-                        'type': 'text',
-                        'id': 'p' + k
-                    })
-                    .addClass('form-control input-sm')
-                    .val(v)
+                        .attr({
+                            'type': 'text',
+                            'id': 'p' + k
+                        })
+                        .addClass('form-control input-sm')
+                        .val(v)
                 );
                 inputGroup.append(
                     $('<div></div>')
-                    .addClass('input-group-btn point-value')
-                    .append(
-                        $('<button></button>')
-                        .addClass('btn btn-default')
-                        .attr('type', 'button')
-                        .html(0)
-                    )
+                        .addClass('input-group-btn point-value')
+                        .append(
+                            $('<button></button>')
+                                .addClass('btn btn-default')
+                                .attr('type', 'button')
+                                .html(0)
+                        )
                 );
                 formGroup.append(inputGroup);
                 _this.payoutContainer.append(formGroup);
             });
             if (typeof(cb) === 'function') cb();
         },
-        buildPlayingCardField: function(cb) {
+        buildPlayingCardField: function (cb) {
             var _this = this;
             for (var row = 1; row <= 5; row++) {
                 var rowHtml = $('<div></div>').addClass('row').css('margin', '0.25em 0');
@@ -116,11 +116,11 @@
                             else if (row == 5) fieldHtml = '<i class="fa fa-arrow-circle-down" aria-hidden="true"></i>';
                             rowHtml.append(
                                 $('<div></div>')
-                                .addClass('col-xs-3')
-                                .attr({
-                                    'id': 'field' + row + 'x' + col
-                                })
-                                .html(fieldHtml)
+                                    .addClass('col-xs-3')
+                                    .attr({
+                                        'id': 'field' + row + 'x' + col
+                                    })
+                                    .html(fieldHtml)
                             );
                         }
                         break;
@@ -128,28 +128,28 @@
                         for (var col = 1; col <= 3; col++) {
                             rowHtml.append(
                                 $('<div></div>')
-                                .addClass('col-xs-3 field' + row + 'x' + col)
-                                .append(
-                                    $('<div></div>')
-                                    .addClass('form-group')
-                                    .append($('<input />')
-                                        .addClass('form-control field field' + row + 'x' + col + ' row' + row + ' col' + col)
-                                        .css({
-                                            'font-weight': 'bold',
-                                            'text-align': 'center'
-                                        })
-                                        .attr({
-                                            'type': 'text',
-                                            'id': 'field' + row + 'x' + col
-                                        }))
-                                )
+                                    .addClass('col-xs-3 field' + row + 'x' + col)
+                                    .append(
+                                        $('<div></div>')
+                                            .addClass('form-group')
+                                            .append($('<input />')
+                                                .addClass('form-control field field' + row + 'x' + col + ' row' + row + ' col' + col)
+                                                .css({
+                                                    'font-weight': 'bold',
+                                                    'text-align': 'center'
+                                                })
+                                                .attr({
+                                                    'type': 'text',
+                                                    'id': 'field' + row + 'x' + col
+                                                }))
+                                    )
                             );
                         }
                         var fieldHtml = (col == 4) ? '<i class="fa fa-arrow-circle-right" aria-hidden="true"></i>' : '';
                         rowHtml.append(
                             $('<div></div>')
-                            .addClass('col-xs-3 field' + row + 'x' + col)
-                            .html(fieldHtml)
+                                .addClass('col-xs-3 field' + row + 'x' + col)
+                                .html(fieldHtml)
                         );
                         break;
                 }
@@ -158,14 +158,14 @@
             }
 
             var maxRowHeight = 0;
-            $('.row', _this.ticketContainer).each(function(k, v) {
+            $('.row', _this.ticketContainer).each(function (k, v) {
                 if ($(this).height() > maxRowHeight) maxRowHeight = $(this).height();
             });
             $('.row', _this.ticketContainer).height(maxRowHeight);
 
             if (typeof(cb) === 'function') cb();
         },
-        cardFieldChange: function(e) {
+        cardFieldChange: function (e) {
             var _this = this;
             var _input = $(e.target);
             var _inputGroup = _input.closest('.form-group');
@@ -190,14 +190,14 @@
                 _this.beginCalc();
             }
         },
-        checkForDuplicates: function(e) {
+        checkForDuplicates: function (e) {
             var _this = this;
             $('.form-group', _this.ticketContainer).removeClass('has-error');
-            $('input.field', _this.ticketContainer).each(function() {
+            $('input.field', _this.ticketContainer).each(function () {
                 var _input = $(this);
                 var _curVal = parseInt($.trim(_input.val()));
                 if (!_curVal) return true;
-                $('input.field', _this.ticketContainer).each(function() {
+                $('input.field', _this.ticketContainer).each(function () {
                     var __input = $(this);
                     var __curVal = parseInt($.trim(__input.val()));
                     if (_input.attr('id') == __input.attr('id')) return true;
@@ -209,10 +209,10 @@
                 });
             });
         },
-        beginCalc: function() {
+        beginCalc: function () {
             var _this = this;
             $('input.field', _this.ticketContainer).prop('disabled', true);
-            _this.getFilledOutFields().each(function(i, v) {
+            _this.getFilledOutFields().each(function (i, v) {
                 var number = parseInt($.trim($(v).val()));
                 if (!isNaN(number)) _this.numbersUsed.push(number);
             });
@@ -225,12 +225,12 @@
                 var results = _this.getGroupProbabilty(numbers);
             }
         },
-        getGroupProbabilty: function(numbers) {
+        getGroupProbabilty: function (numbers) {
             var _this = this;
             switch (numbers.length) {
                 case 3:
                     var sum = 0;
-                    $.each(numbers, function(i, v) {
+                    $.each(numbers, function (i, v) {
                         sum += v;
                     });
                     var results = _this.defaultProbResults;
@@ -238,11 +238,11 @@
                     return results;
                 case 2:
                     var sum = 0;
-                    $.each(numbers, function(i, v) {
+                    $.each(numbers, function (i, v) {
                         sum += v;
                     });
                     var results = _this.defaultProbResults;
-                    $.each(results, function(i, v) {
+                    $.each(results, function (i, v) {
                         if (sum >= i) {
                             results[i] = 'zero';
                             return true;
@@ -267,9 +267,9 @@
 
             }
         },
-        getFilledOutFields: function() {
+        getFilledOutFields: function () {
             var _this = this;
-            return $('input.field', _this.ticketContainer).filter(function(k, v) {
+            return $('input.field', _this.ticketContainer).filter(function (k, v) {
                 return !(!parseInt($.trim($(v).val())));
             });
         },
